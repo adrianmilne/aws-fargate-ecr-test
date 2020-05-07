@@ -3,6 +3,7 @@
 ##############################################################
 resource "aws_vpc" "vpc" {
   cidr_block           = "192.168.0.0/16"
+  # The 2 below must be set to true if 'private_dns_enabled' is set to true for the VPC interface endpoints
   enable_dns_hostnames = var.enable_dns_hostnames
   enable_dns_support   = var.enable_dns_support
   instance_tenancy     = "default"
@@ -37,43 +38,9 @@ resource "aws_subnet" "private_subnet" {
   }
 }
 
-##############################################################
-# Internet Gateway
-##############################################################
 
-resource "aws_internet_gateway" "internet_gateway" {
-  vpc_id = aws_vpc.vpc.id
 
-  tags = {
-    Name = "Test-Internet-Gateway"
-  }
-}
 
-##############################################################
-# Elastic IP's for NAT
-##############################################################
-
-resource "aws_eip" "elastic_ip" {
-  vpc = true
-
-  tags = {
-    Name = "Test-Elastic-IP"
-  }
-}
-
-##############################################################
-# NAT Gateway for private subnets outbound traffic
-# Availability Zone A only at the moment (no redundancy)
-##############################################################
-
-resource "aws_nat_gateway" "nat_gateway" {
-  allocation_id = aws_eip.elastic_ip.id
-  subnet_id     = aws_subnet.private_subnet.id
-
-  tags = {
-    Name = "Test-NAT-Gateway"
-  }
-}
 
 ##############################################################
 # Routing Tables
@@ -87,31 +54,9 @@ resource "aws_route_table" "main_route_table" {
   }
 }
 
-resource "aws_route_table" "nat_route_table" {
-  vpc_id = aws_vpc.vpc.id
 
-  route {
-    cidr_block     = "0.0.0.0/0"
-    nat_gateway_id = aws_nat_gateway.nat_gateway.id
-  }
 
-  tags = {
-    Name = "Test-NAT-RT"
-  }
-}
 
-resource "aws_route_table" "ig_route_table" {
-  vpc_id = aws_vpc.vpc.id
-
-  route {
-    cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.internet_gateway.id
-  }
-
-  tags = {
-    Name = "Test-IG-RT"
-  }
-}
 
 ##############################################################
 # Routing Table/Subnet associations
@@ -121,12 +66,3 @@ resource "aws_main_route_table_association" "route_table_association_main" {
   route_table_id = aws_route_table.main_route_table.id
 }
 
-resource "aws_route_table_association" "route_table_association_nat" {
-  route_table_id = aws_route_table.nat_route_table.id
-  subnet_id      = aws_subnet.private_subnet.id
-}
-
-resource "aws_route_table_association" "route_table_association_ig" {
-  route_table_id = aws_route_table.ig_route_table.id
-  subnet_id      = aws_subnet.public_subnet.id
-}

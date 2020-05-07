@@ -1,14 +1,15 @@
 
+##############################################################
+# ECR/CW Interface Endpoints
+##############################################################
 
 resource "aws_vpc_endpoint" "vpc_endpoint_ecr" {
   vpc_id            = var.vpc_id
   service_name      = "com.amazonaws.eu-west-2.ecr.dkr"
   vpc_endpoint_type = "Interface"
-
   security_group_ids = [
     aws_security_group.allow_inbound_https.id
   ]
-
   subnet_ids          = [var.subnet_id]
   private_dns_enabled = var.private_dns_enabled
 }
@@ -17,15 +18,16 @@ resource "aws_vpc_endpoint" "vpc_endpoint_cloudwatch" {
   vpc_id            = var.vpc_id
   service_name      = "com.amazonaws.eu-west-2.logs"
   vpc_endpoint_type = "Interface"
-
   security_group_ids = [
     aws_security_group.allow_inbound_https.id
   ]
-
   subnet_ids          = [var.subnet_id]
   private_dns_enabled = var.private_dns_enabled
 }
 
+##############################################################
+# S3 Gateway Endpoint
+##############################################################
 
 resource "aws_vpc_endpoint" "vpc_endpoint_s3" {
   vpc_id            = var.vpc_id

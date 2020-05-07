@@ -13,11 +13,3 @@ output "private_subnet_id" {
 output "main_route_table_id" {
   value = aws_route_table.main_route_table.id
 }
-
-output "ig_route_table_id" {
-  value = aws_route_table.ig_route_table.id
-}
-
-output "nat_route_table_id" {
-  value = aws_route_table.nat_route_table.id
-}
